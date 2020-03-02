@@ -1,0 +1,23 @@
+{
+  "name": "phone-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "Mauro Marssola",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^13.7.7",
+    "@types/puppeteer": "^2.0.1",
+    "@types/puppeteer-core": "^2.0.0",
+    "node-tsc": "0.0.14",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "puppeteer": "^2.1.1",
+    "puppeteer-core": "^2.1.1"
+  }
+}
