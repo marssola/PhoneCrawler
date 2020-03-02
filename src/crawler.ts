@@ -1,4 +1,5 @@
 import { launch, Browser, Page } from 'puppeteer';
+import { WorkBookRow } from './DocumentXLSX';
 
 export class Crawler {
     private browser!: Browser;
@@ -77,14 +78,21 @@ export class Crawler {
         return pagination ? pagination.length : 1;
     }
 
-    async getResult (): Promise<Array<object>> {
+    async getResult (): Promise<Array<WorkBookRow>> {
         const tbodys = await this.page.$$('#formWCSVivo > table > tbody > tr > td > table > tbody');
         const result = await Promise.all(tbodys.map(async tbody => {
-            const [name, address, phone] = await this.page.evaluate(el => [
-                el.querySelector('tr:nth-child(1) > td:nth-child(1)').innerText,
-                el.querySelector('tr:nth-child(1) > td:nth-child(2)').innerText,
-                el.querySelector('tr:nth-child(2) > td:nth-child(1)').innerText,
-            ], tbody);
+            const [name, address, phone] = await this.page.evaluate(el => {
+                function capitalize(s: string, all: Boolean = false): string {
+                    return all ?
+                        s.split(' ').map(word => capitalize(word)).join(' ') :
+                        s.charAt(0).toUpperCase() + s.slice(1);
+                }
+                return [
+                    capitalize(el.querySelector('tr:nth-child(1) > td:nth-child(1)').innerText.toLowerCase(), true),
+                    capitalize(el.querySelector('tr:nth-child(1) > td:nth-child(2)').innerText.toLowerCase(), true),
+                    el.querySelector('tr:nth-child(2) > td:nth-child(1)').innerText,
+                ];
+            }, tbody);
             return {
                 name, address, phone
             };
