@@ -64,6 +64,38 @@ export class Crawler {
         await this.page.click(selectorButtonSearch);
     }
 
+    async waitForResult (): Promise<void> {
+        const selectorTableResult = '.tabelaResultado';
+        await this.page.waitForSelector(selectorTableResult).catch(async (error: Error) => {
+            console.log(error.name, error.message);
+            await this.waitForResult();
+        });
+    }
+
+    async getTotalPages (): Promise<number> {
+        const pagination = await this.page.$$('#formWCSVivo > table > tbody > tr:nth-child(16) > td > a');
+        return pagination ? pagination.length : 1;
+    }
+
+    async getResult (): Promise<Array<object>> {
+        const tbodys = await this.page.$$('#formWCSVivo > table > tbody > tr > td > table > tbody');
+        const result = await Promise.all(tbodys.map(async tbody => {
+            const [name, address, phone] = await this.page.evaluate(el => [
+                el.querySelector('tr:nth-child(1) > td:nth-child(1)').innerText,
+                el.querySelector('tr:nth-child(1) > td:nth-child(2)').innerText,
+                el.querySelector('tr:nth-child(2) > td:nth-child(1)').innerText,
+            ], tbody);
+            return {
+                name, address, phone
+            };
+        }));
+        return result;
+    }
+    
+    async nextResultPage (page: number): Promise<void> {
+        await this.page.click(`#formWCSVivo > table > tbody > tr:nth-child(16) > td > a:nth-child(${page})`);
+    }
+
     async end (): Promise<void> {
         await this.browser.close();
     }
