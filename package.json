@@ -20,6 +20,7 @@
     "@types/xlsx": "0.0.36",
     "puppeteer": "^2.1.1",
     "puppeteer-core": "^2.1.1",
+    "slugify": "^1.4.0",
     "xlsx": "^0.15.5"
   }
 }

@@ -65,11 +65,23 @@ export class Crawler {
         await this.page.click(selectorButtonSearch);
     }
 
-    async waitForResult (): Promise<void> {
+    async unvailableSystem (): Promise<void> {
+        await this.page.waitForSelector('#popupAlerta1').then(() => {
+            this.end();
+            throw 'Sistema indisponível';
+        }).catch((error: Error) => {
+            console.log(error);
+        });
+    }
+
+    async waitForResult (recursive: number = 0): Promise<void> {
         const selectorTableResult = '.tabelaResultado';
         await this.page.waitForSelector(selectorTableResult).catch(async (error: Error) => {
-            console.log(error.name, error.message);
-            await this.waitForResult();
+            if (recursive > 0) this.unvailableSystem();
+            if (recursive > 3) throw error;
+
+            console.log(error.name, error.message, recursive);
+            await this.waitForResult(++recursive);
         });
     }
 
@@ -89,7 +101,7 @@ export class Crawler {
                 }
                 return [
                     capitalize(el.querySelector('tr:nth-child(1) > td:nth-child(1)').innerText.toLowerCase(), true),
-                    capitalize(el.querySelector('tr:nth-child(1) > td:nth-child(2)').innerText.toLowerCase(), true),
+                    el.querySelector('tr:nth-child(1) > td:nth-child(2)').innerText,
                     el.querySelector('tr:nth-child(2) > td:nth-child(1)').innerText,
                 ];
             }, tbody);
@@ -101,7 +113,9 @@ export class Crawler {
     }
     
     async nextResultPage (page: number): Promise<void> {
-        await this.page.click(`#formWCSVivo > table > tbody > tr:nth-child(16) > td > a:nth-child(${page})`);
+        await this.page.click(`#formWCSVivo > table > tbody > tr:nth-child(16) > td > a:nth-child(${page})`).catch((error: Error) => {
+            console.log(error);
+        });
     }
 
     async end (): Promise<void> {

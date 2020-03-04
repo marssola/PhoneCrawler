@@ -1,6 +1,7 @@
 import { readFile, WorkBook, WorkSheet } from 'xlsx';
 import XLSX from 'xlsx';
 import { existsSync, mkdirSync } from 'fs';
+import slugify from 'slugify';
 
 const outputPath = './output';
 
@@ -15,8 +16,28 @@ export interface WorkBookRow {
     phone: string
 }
 
+interface ObjectContentRow {
+    address: string,
+    number: string,
+    until?: string,
+    condominium?: string
+}
+
+export interface WorkSheetList {
+    'Endereço': string,
+    'Número': string,
+    'Até'?: string,
+    'Cidade': string,
+    'Condominio'?: string,
+    'Status'?: string
+}
+
 export function readXLSX (filename: string): WorkBook {
     return readFile(filename);
+}
+
+export function getWorkSheetJSON(worksheet: WorkSheet): Array<WorkSheetList> {
+    return XLSX.utils.sheet_to_json(worksheet);
 }
 
 export function getFirstSheetName (workbook: WorkBook): string {
@@ -63,7 +84,7 @@ export function createWorkbook (data: Array<WorkBookRow>): WorkBook {
         { wch: maxLength(data.map(item => item.address)) },
         { wch: maxLength(data.map(item => item.phone)) },
     ];
-    console.log(worksheet);
+
     workbook.Sheets[sheetname] = worksheet
     return workbook;
 }
@@ -73,5 +94,35 @@ export function createXLSX (filename: string, workbook: WorkBook) {
         mkdirSync(outputPath);
     const pathname = `${outputPath}/${filename}.xlsx`;
     XLSX.writeFile(workbook, pathname);
-    // writeFile();
+}
+
+export function createFileName(obj: ObjectContentRow): string {
+    const { address, number, until, condominium } = obj;
+    return slugify(condominium ? condominium : `${address}, ${number}${until ? ` - ${until}`: ''}`);
+}
+
+export function saveSheetJSON (sheetJSON: Array<WorkSheetList>, filename: string) {
+    const sheet: Array<any> = [
+        ['Endereço', 'Número', 'Até', 'Cidade', 'Condominio', 'Status']
+    ];
+
+    for (const row of sheetJSON) {
+        const { Endereço, Número, Até, Cidade, Condominio, Status } = row;
+        sheet.push([Endereço, Número, Até || '', Cidade, Condominio || '', Status || '']);
+    }
+
+    const worksheet: WorkSheet = XLSX.utils.aoa_to_sheet(sheet);
+    worksheet['!cols'] = [
+        { wch: maxLength(sheet.map(item => String(item[0]))) },
+        { wch: maxLength(sheet.map(item => String(item[1]))) },
+        { wch: maxLength(sheet.map(item => String(item[2]))) },
+        { wch: maxLength(sheet.map(item => String(item[3]))) },
+        { wch: maxLength(sheet.map(item => String(item[4]))) },
+        { wch: maxLength(sheet.map(item => String(item[5]))) },
+    ];
+    const workbook: WorkBook = XLSX.utils.book_new();
+    workbook.SheetNames.push('Lista');
+    workbook.Sheets['Lista'] = worksheet;
+
+    XLSX.writeFile(workbook, filename);
 }
