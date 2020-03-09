@@ -98,7 +98,7 @@ export function createXLSX (filename: string, workbook: WorkBook) {
 
 export function createFileName(obj: ObjectContentRow): string {
     const { address, number, until, condominium } = obj;
-    return slugify(condominium ? condominium : `${address}, ${number}${until ? ` - ${until}`: ''}`);
+    return slugify(`${address}, ${number}${until ? ` - ${until}` : ''}${condominium ? ` (${condominium})`: ''}`);
 }
 
 export function saveSheetJSON (sheetJSON: Array<WorkSheetList>, filename: string) {

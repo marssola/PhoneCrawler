@@ -87,7 +87,7 @@ export class Crawler {
 
     async getTotalPages (): Promise<number> {
         const pagination = await this.page.$$('#formWCSVivo > table > tbody > tr:nth-child(16) > td > a');
-        return pagination ? pagination.length : 1;
+        return pagination && pagination.length ? pagination.length : 1;
     }
 
     async getResult (): Promise<Array<WorkBookRow>> {

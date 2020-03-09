@@ -4,6 +4,7 @@ import { existsSync } from 'fs';
 import { WorkBook, WorkSheet } from 'xlsx/types';
 
 const listFile = 'lista.xlsx';
+let totalPhones = 0;
 
 (async () => {
     const crawler = new Crawler();
@@ -44,15 +45,20 @@ const listFile = 'lista.xlsx';
             const contentPages = await crawler.getResult();
             phones.push(...contentPages);
         }
-        const workbook: WorkBook = createWorkbook(phones);
-        const filename = createFileName({ address, number, until, condominium });
-        createXLSX(filename, workbook);
 
-        row.Status = 'Ok';
+        if (phones.length) {
+            const workbook: WorkBook = createWorkbook(phones);
+            const filename = createFileName({ address, number, until, condominium });
+            createXLSX(filename, workbook);
+        }
+
+        row.Status = phones.length ? 'Ok': '-';
         saveSheetJSON(sheetJSON, listFile);
-        console.log('\x1b[32m%s\x1b[0m', '[ Ok ]', `${address}, ${number}${until ? ` - ${until}`: ''}${condominium ? ` (${condominium})`: ''}`);
+        console.log('\x1b[32m%s\x1b[0m', '[ Ok ]', `${address}, ${number}${until ? ` - ${until}` : ''}${condominium ? ` (${condominium})` : ''}`, phones.length);
 
+        totalPhones += phones.length;
         await crawler.buttonSearch();
     }
     await crawler.end();
+    console.log(`Total de Telefones: ${totalPhones}`);
 })();

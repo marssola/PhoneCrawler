@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+.DStore
+lista.xlsx
 output/
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
